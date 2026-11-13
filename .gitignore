@@ -1,0 +1,19 @@
+# KiCad temporary & backup files
+*-backups/
+*.bak
+*.lck
+*.kicad_pcb-bak
+*.kicad_sch-bak
+_autosave-*
+fp-info-cache
+
+# Arduino / PlatformIO build artifacts
+build/
+.pio/
+*.hex
+*.bin
+*.elf
+
+# OS generated files
+.DS_Store
+Thumbs.db
