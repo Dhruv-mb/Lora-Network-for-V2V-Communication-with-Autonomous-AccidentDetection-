@@ -1,1 +1,102 @@
 
+/*
+ * Project: LoRa Network for V2V Communication with Autonomous Accident Detection and Predictive Location-Based Hazard Alerts
+ * Module: Trailing Vehicle Hazard Receiver Node
+ * Hardware: ESP32 + SX1278 LoRa (433 MHz) + 0.96" SSD1306 OLED
+ * Author: Dhruv S. Karekar & Team (KIT's College of Engineering, Kolhapur)
+ */
+
+#include <Wire.h>
+#include <SPI.h>
+#include <LoRa.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_SDA 21
+#define OLED_SCL 22
+
+#define LORA_SCK 18
+#define LORA_MISO 19
+#define LORA_MOSI 2
+#define LORA_SS 13
+#define LORA_RST 12
+#define LORA_DIO0 14
+
+const long LORA_FREQUENCY = 433E6;
+const byte LORA_SYNC_WORD = 0xF3;
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+unsigned long lastAlertTime = 0;
+bool hazardDisplayed = false;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(OLED_SDA, OLED_SCL);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    for (;;);
+  }
+
+  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+
+  if (!LoRa.begin(LORA_FREQUENCY)) {
+    Serial.println(F("LoRa Receiver Init Failed"));
+    while (1);
+  }
+  LoRa.setSyncWord(LORA_SYNC_WORD);
+
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 24);
+  display.println(F("V2V Guard Listening..."));
+  display.display();
+}
+
+void loop() {
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    String payload = "";
+    while (LoRa.available()) {
+      payload += (char)LoRa.read();
+    }
+    int rssi = LoRa.packetRssi();
+    lastAlertTime = millis();
+    hazardDisplayed = true;
+
+    // Parse CSV Payload: "AUTO_SOS:VH-01,16.705000,74.243300"
+    int colonIdx = payload.indexOf(':');
+    int comma1 = payload.indexOf(',');
+    int comma2 = payload.lastIndexOf(',');
+
+    String alertType = payload.substring(0, colonIdx);
+    String senderID = payload.substring(colonIdx + 1, comma1);
+    String lat = payload.substring(comma1 + 1, comma2);
+    String lng = payload.substring(comma2 + 1);
+
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.println(F("!! ACCIDENT AHEAD !!"));
+    display.print(F("FROM: ")); display.print(senderID);
+    display.print(F(" | RSSI:")); display.println(rssi);
+    display.println(F("---------------------"));
+    display.print(F("LAT: ")); display.println(lat);
+    display.print(F("LNG: ")); display.println(lng);
+    display.setCursor(0, 54);
+    display.println(F("SLOW DOWN IMMEDIATELY"));
+    display.display();
+  }
+
+  // Return to scanning screen 8 seconds after last received beacon
+  if (hazardDisplayed && (millis() - lastAlertTime > 8000)) {
+    hazardDisplayed = false;
+    display.clearDisplay();
+    display.setCursor(0, 24);
+    display.println(F("V2V Guard Listening..."));
+    display.display();
+  }
+}
