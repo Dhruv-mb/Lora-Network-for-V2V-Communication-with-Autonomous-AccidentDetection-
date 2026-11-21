@@ -1,13 +1,1 @@
 
-Sr. No.,Component Description,Qty,Unit Price (INR),Total Price (INR)
-1,TTGO T-Call V1.4 ESP32 GSM Module (Includes SIM800L),2,1850.00,3700.00
-2,SX1278 LoRa Transceiver Module (Ra-02 433MHz),2,600.00,1200.00
-3,NEO-6M GPS Module with Ceramic Antenna,1,350.00,350.00
-4,MPU-6050 Motion Tracking Module (6-Axis Accelerometer/Gyro),1,180.00,180.00
-5,0.96" OLED Display (SSD1306 Controller),2,220.00,440.00
-6,YL-99 Impact Detection Sensor,1,60.00,60.00
-7,1A Lithium Battery Charger Module (TP4056 with Protection),2,40.00,80.00
-8,3.7V High-Drain LiPo Batteries (2000mAh),2,450.00,900.00
-9,Custom Printed Circuit Board (PCB Design & Fabrication),2,350.00,700.00
-10,Miscellaneous (Tactile Switches, Connecting Headers, Passives),1,150.00,150.00
-,Total Estimated Bill of Materials Cost,,,7760.00
